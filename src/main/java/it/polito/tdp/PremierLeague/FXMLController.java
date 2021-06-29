@@ -8,6 +8,8 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import it.polito.tdp.PremierLeague.model.Model;
+import it.polito.tdp.PremierLeague.model.PlayerWithWeight;
+import it.polito.tdp.PremierLeague.model.TopPlayer;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -17,6 +19,7 @@ import javafx.scene.control.TextField;
 public class FXMLController {
 	
 	private Model model;
+	private boolean grafoCreato = false;
 
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
@@ -44,17 +47,66 @@ public class FXMLController {
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	this.txtResult.clear();
+    	if(this.txtGoals.getText().equals("")) {
+    		this.txtResult.appendText("Selezionare un numero minimo di goal\n");
+    		return;
+    	}
+    	double minGoal = 0.0;
+    	try {
+    		minGoal = Double.parseDouble(this.txtGoals.getText());
+    	}catch(NumberFormatException e ) {
+    		this.txtResult.appendText("Il numero minimo di goal deve essere un decimale positivo\n");
+    		return;
+    	}
+    	if(minGoal<0.0) {
+    		this.txtResult.appendText("Il numero minimo di goal deve essere un decimale positivo\n");
+    		return;
+    	}
+    	this.model.creaGrafo(minGoal);
+    	this.grafoCreato = true;
+    	this.txtResult.appendText("Grafo creato\n# vertici: "+this.model.getNumVertici()+"\n# archi: "+this.model.GetNumArchi()+"\n");
+    	
+    	
 
     }
 
     @FXML
     void doDreamTeam(ActionEvent event) {
-
+    	this.txtResult.clear();
+    	if(!this.grafoCreato) {
+    		this.txtResult.appendText("Creare il grafo\n");
+    		return;
+    	}
+    	if(this.txtK.getText().equals("")) {
+    		this.txtResult.appendText("Selezionare un numero di giocatori K\n");
+    		return;
+    	}
+    	int k = 0;
+    	try {
+    		k = Integer.parseInt(this.txtK.getText());
+    	}catch(NumberFormatException e) {
+    		this.txtResult.appendText("K deve essere un intero positivo\n");
+    		return;
+    	}
+    	this.txtResult.appendText(this.model.doDreamTeam(k));
+    	
     }
 
     @FXML
     void doTopPlayer(ActionEvent event) {
-
+    	this.txtResult.clear();
+    	if(!this.grafoCreato) {
+    		this.txtResult.appendText("Creare il grafo\n");
+    		return;
+    	}
+    	TopPlayer tp = this.model.doTopPlayer();
+    	
+    	this.txtResult.appendText("Trovato il top player: "+tp.getP()+"\n");
+    	this.txtResult.appendText("Sono stati battuti i seguenti giocatori:\n");
+    	for(PlayerWithWeight pww : tp.getBattuti()) {
+    		this.txtResult.appendText(pww.getP()+" "+pww.getPeso()+"\n");
+    	}
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
